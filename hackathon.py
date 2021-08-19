@@ -1,12 +1,6 @@
-from logging import exception
-import blaseball_mike.events as sse
 import blaseball_mike.database as mikedb
 import asyncio
 import gspread
-import json
-from sseclient import SSEClient
-
-
 
 
 credentials = gspread.service_account()
@@ -40,7 +34,6 @@ team_map = {
     '8d87c468-699a-47a8-b40d-cfb73a5660ad': 24,
 }
 async def stream_events(url='https://www.blaseball.com/events/streamData', retry_base=0.01, retry_max=300):
-    import asyncio
     from concurrent import futures
     import ujson
 
@@ -73,6 +66,7 @@ async def stream_events(url='https://www.blaseball.com/events/streamData', retry
 
 
 def feedtyper(event):
+    # Function for reverse-engineering feed type
     event_lower = event.lower()
     type = 0
 
@@ -229,12 +223,17 @@ def feedtyper(event):
     return type
     
 
-async def thing():
+async def main():
+    # Main script
+
+    # Initialize variables
     today = -1
     innings_away = [['','','','','','','','',''] for ngames in range(12)]
     innings_home = [['','','','','','','','',''] for ngames in range(12)]
     games_map = {}
     teams = None
+
+    # Get data stream and process it constantly
     async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
         if event.get('games',{}).get('schedule'):
             # Get team lineups
@@ -246,7 +245,6 @@ async def thing():
             players = mikedb.get_player(player_ids)
             for player in players.values():
                 player_map[player['id']] = player.get('unscatteredName',player.get('name'))
-                # player_map[player['id']] = player['name']
             team_lineups = {}
             for team in teams:
                 lineup = team['lineup']
@@ -255,6 +253,7 @@ async def thing():
                     lineup_names.append('')
                 team_lineups[team['id']] = lineup_names
 
+            # Initialize bulk data structures
             payload_dict = {}
             weathers = ['' for ngames in range(12)]
             feeds = ['' for ngames in range(12)]
@@ -269,8 +268,9 @@ async def thing():
             away_scores = ['' for ngames in range(12)]
             home_scores = ['' for ngames in range(12)]
 
+            # Get games
             games = event['games']['schedule']
-            # Reset inning scores if it's a new day
+            # Reset inning scores and set a new fixed order of games if it's a new day
             if event['games']['sim']['day'] != today:
                 innings_away = [['','','','','','','','',''] for ngames in range(12)]
                 innings_home = [['','','','','','','','',''] for ngames in range(12)]
@@ -279,6 +279,7 @@ async def thing():
                 for i_game,game in enumerate(games):
                     games_map[game['id']] = i_game
 
+            # Loop over games
             for game in games:
                 i_game = games_map[game['id']]
 
@@ -332,11 +333,8 @@ async def thing():
                 battings[i_game] = batting
                 away_scores[i_game] = game['awayScore']
                 home_scores[i_game] = game['homeScore']
-                # if i_game == 0:
-                #     print("{} {} {} {} {}".format(game['inning'], game['topOfInning'], game['halfInningScore'], game['halfInningOuts'], game['lastUpdate']))
-                #     print("")
 
-            # Upload all game data
+            # Assemble all data for this tick
             payload = []
             for row in range(1,25):
                 payload.append(payload_dict[row])
@@ -356,9 +354,8 @@ async def thing():
                 payload.append([game[inning] for game in innings_away])
             for inning in range(9):
                 payload.append([game[inning] for game in innings_home])
+            # Upload Sheets with this tick
             worksheet.update('D2:Y55', payload)
 
-asyncio.run(thing())
-
-# TODO
-# Do something for winning teams
+# Execution starts here.
+asyncio.run(main())
