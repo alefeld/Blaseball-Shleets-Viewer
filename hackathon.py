@@ -234,11 +234,17 @@ async def main():
     teams = None
 
     # Get data stream and process it constantly
-    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
+    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2020-10-05T16:31:50.17Z&interval=1500'): # Crowvertime
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-05-20T11:44:50.17Z&interval=1500'): # Drumsolo
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
         if event.get('games',{}).get('schedule'):
             # Get team lineups
             if event.get('leagues'):
                 teams = event.get('leagues',{}).get('teams')
+            if not teams:
+                continue
             teams = [team for team in teams if team['id'] in team_map.keys()] # Remove teams not playing
             player_ids = [player for team in teams for player in team['lineup']]
             player_map = {} # Used later as well
@@ -337,7 +343,8 @@ async def main():
             # Assemble all data for this tick
             payload = []
             for row in range(1,25):
-                payload.append(payload_dict[row])
+                payload.append(payload_dict.get(row,['']))
+            payload.append([event.get('games').get('sim').get('season')+1,event.get('games').get('sim').get('day')+1,'','','','','','','','','',''])
             payload.append(weathers)
             payload.append(feeds)
             payload.append(feed_types)
@@ -355,7 +362,7 @@ async def main():
             for inning in range(9):
                 payload.append([game[inning] for game in innings_home])
             # Upload Sheets with this tick
-            worksheet.update('D2:Y55', payload)
+            worksheet.update('D2:Y56', payload)
 
 # Execution starts here.
 asyncio.run(main())
