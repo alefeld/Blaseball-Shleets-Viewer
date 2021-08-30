@@ -234,11 +234,9 @@ async def main():
     teams = None
 
     # Get data stream and process it constantly
-    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
-    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
-    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2020-10-05T16:31:50.17Z&interval=1500'): # Crowvertime
+    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2020-10-05T16:31:50.17Z&interval=1500'): # Crowvertime
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-05-20T11:44:50.17Z&interval=1500'): # Drumsolo
-    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
         if event.get('games',{}).get('schedule'):
             # Get team lineups
             if event.get('leagues'):
@@ -248,7 +246,7 @@ async def main():
             teams = [team for team in teams if team['id'] in team_map.keys()] # Remove teams not playing
             player_ids = [player for team in teams for player in team['lineup']]
             player_map = {} # Used later as well
-            players = mikedb.get_player(player_ids)
+            players = mikedb.get_player(player_ids) # TODO make this not need to be called with every game update?
             for player in players.values():
                 player_map[player['id']] = player.get('unscatteredName',player.get('name'))
             team_lineups = {}
@@ -264,12 +262,13 @@ async def main():
             weathers = ['' for ngames in range(12)]
             feeds = ['' for ngames in range(12)]
             feed_types = [0 for ngames in range(12)]
-            away_names = ['' for ngames in range(12)]
-            home_names = ['' for ngames in range(12)]
+            away_ids = ['' for ngames in range(12)]
+            home_ids = ['' for ngames in range(12)]
             base5s = ['' for ngames in range(12)]
             balls_all = ['' for ngames in range(12)]
             strikes_all = ['' for ngames in range(12)]
             outs_all = ['' for ngames in range(12)]
+            finalized_all = ['' for ngames in range(12)]
             battings = ['' for ngames in range(12)]
             away_scores = ['' for ngames in range(12)]
             home_scores = ['' for ngames in range(12)]
@@ -305,15 +304,13 @@ async def main():
                 # Get home team
                 home_bases = home_baserunners
                 home_id = game['homeTeam']
-                home_name = game['homeTeamName']
-                home_names[i_game] = home_name
+                home_ids[i_game] = home_id
                 home_pitcher = game['homePitcherName']
                 home_batter = player_map.get(game['homeBatter'],'') if not game['topOfInning'] else ''
                 # Get away team
                 away_bases = away_baserunners
                 away_id = game['awayTeam']
-                away_name = game['awayTeamName']
-                away_names[i_game] = away_name
+                away_ids[i_game] = away_id
                 away_pitcher = game['awayPitcherName']
                 away_batter = player_map.get(game['awayBatter'],'') if game['topOfInning'] else ''
                 # Add to payload
@@ -322,20 +319,21 @@ async def main():
 
                 # Get game data
                 if game['topOfInning']:
-                    batting = away_name
+                    batting = away_id
                     if game['inning'] in range(9):
                         innings_away[i_game][game['inning']] = game['awayScore'] - sum([innings_away[i_game][inning] for inning in range(game['inning']) if innings_away[i_game][inning] != '']) #game['halfInningScore'] # halfInning* fields are bugged for home team =/
                 else:
-                    batting = home_name
+                    batting = home_id
                     if game['inning'] in range(9):
                         innings_home[i_game][game['inning']] = game['homeScore'] - sum([innings_home[i_game][inning] for inning in range(game['inning']) if innings_home[i_game][inning] != '']) #game['halfInningScore'] # halfInning* fields are bugged for home team =/
                 weathers[i_game] = game['weather']
                 feeds[i_game] = game['lastUpdate'].replace('\n',' ')
                 feed_types[i_game] = feedtyper(game['lastUpdate'])
-                base5s[i_game] = 'TRUE' if game['homeBases']==5 else 'FALSE'
+                base5s[i_game] = True if game['homeBases']==5 else False
                 balls_all[i_game] = game['atBatBalls']
                 strikes_all[i_game] = game['atBatStrikes']
                 outs_all[i_game] = game['halfInningOuts']
+                finalized_all[i_game] = game['finalized']
                 battings[i_game] = batting
                 away_scores[i_game] = game['awayScore']
                 home_scores[i_game] = game['homeScore']
@@ -348,12 +346,13 @@ async def main():
             payload.append(weathers)
             payload.append(feeds)
             payload.append(feed_types)
-            payload.append(away_names)
-            payload.append(home_names)
+            payload.append(away_ids)
+            payload.append(home_ids)
             payload.append(base5s)
             payload.append(balls_all)
             payload.append(strikes_all)
             payload.append(outs_all)
+            payload.append(finalized_all)
             payload.append(battings)
             payload.append(away_scores)
             payload.append(home_scores)
@@ -362,7 +361,7 @@ async def main():
             for inning in range(9):
                 payload.append([game[inning] for game in innings_home])
             # Upload Sheets with this tick
-            worksheet.update('D2:Y56', payload)
+            worksheet.update('D2:Y57', payload)
 
 # Execution starts here.
 asyncio.run(main())
