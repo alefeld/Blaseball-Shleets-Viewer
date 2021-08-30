@@ -232,9 +232,14 @@ async def main():
     innings_home = [['','','','','','','','',''] for ngames in range(12)]
     games_map = {}
     teams = None
+    players = []
+    player_ids_cache = set()
+    counter_playerget = 0
 
     # Get data stream and process it constantly
-    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'):
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'): # Faster
+    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-14T18:59:50.17Z&interval=3000'): # Fast
+    # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=4000'): # Normal?
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2020-10-05T16:31:50.17Z&interval=1500'): # Crowvertime
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-05-20T11:44:50.17Z&interval=1500'): # Drumsolo
         if event.get('games',{}).get('schedule'):
@@ -245,8 +250,12 @@ async def main():
                 continue
             teams = [team for team in teams if team['id'] in team_map.keys()] # Remove teams not playing
             player_ids = [player for team in teams for player in team['lineup']]
+            if (set(player_ids) != player_ids_cache) or (counter_playerget >= 100):
+                players = mikedb.get_player(player_ids)
+                player_ids_cache = set(player_ids)
+                counter_playerget = 0
+            counter_playerget += 1
             player_map = {} # Used later as well
-            players = mikedb.get_player(player_ids) # TODO make this not need to be called with every game update?
             for player in players.values():
                 player_map[player['id']] = player.get('unscatteredName',player.get('name'))
             team_lineups = {}
