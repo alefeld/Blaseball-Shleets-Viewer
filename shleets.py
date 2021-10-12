@@ -238,7 +238,7 @@ async def main():
 
     # Get data stream and process it constantly
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'): # Faster
-    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-14T18:59:50.17Z&interval=3000'): # Fast
+    async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-15T05:59:50.17Z&interval=3000'): # Fast
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=4000'): # Normal?
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2020-10-05T16:31:50.17Z&interval=1500'): # Crowvertime
     # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-05-20T11:44:50.17Z&interval=1500'): # Drumsolo
