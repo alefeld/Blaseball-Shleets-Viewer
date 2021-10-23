@@ -1,7 +1,6 @@
 import blaseball_mike.database as mikedb
 import asyncio
 import gspread
-import time
 
 
 credentials = gspread.service_account()
@@ -9,29 +8,53 @@ spreadsheet_id = '1rDdGyhxELItkd82vjoN0mLJ9r2GGpeJCeRo33-gb0go'
 worksheet = credentials.open_by_key(spreadsheet_id).worksheet('All Data')
 
 timestamps = [
-    'https://api.sibr.dev/replay/v1/replay?from=2021-03-01T15:59:50.17Z&interval=4000', # Season 12 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-01T15:59:50.17Z&interval=4000', # Season 12 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-02T19:59:50.17Z&interval=4000', # Season 12 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-04T18:59:50.17Z&interval=4000', # Season 12 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-03-06T15:59:50.17Z&interval=4000', # Season 12 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-03-08T15:59:50.17Z&interval=4000', # Season 13 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-08T15:59:50.17Z&interval=4000', # Season 13 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-09T19:59:50.17Z&interval=4000', # Season 13 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-11T18:59:50.17Z&interval=4000', # Season 13 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-03-13T15:59:50.17Z&interval=4000', # Season 13 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-03-15T15:59:50.17Z&interval=4000', # Season 14 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-15T15:59:50.17Z&interval=4000', # Season 14 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-16T19:59:50.17Z&interval=4000', # Season 14 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-03-18T18:59:50.17Z&interval=4000', # Season 14 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-03-20T15:59:50.17Z&interval=4000', # Season 14 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-04-05T15:59:50.17Z&interval=4000', # Season 15 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-05T15:59:50.17Z&interval=4000', # Season 15 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-06T19:59:50.17Z&interval=4000', # Season 15 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-08T18:59:50.17Z&interval=4000', # Season 15 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-04-10T15:59:50.17Z&interval=4000', # Season 15 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-04-12T15:59:50.17Z&interval=4000', # Season 16 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-12T15:59:50.17Z&interval=4000', # Season 16 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-13T20:59:50.17Z&interval=4000', # Season 16 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-15T20:59:50.17Z&interval=4000', # Season 16 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-04-17T15:59:50.17Z&interval=4000', # Season 16 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-04-19T15:59:50.17Z&interval=4000', # Season 17 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-19T15:59:50.17Z&interval=4000', # Season 17 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-20T19:59:50.17Z&interval=4000', # Season 17 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-04-22T18:59:50.17Z&interval=4000', # Season 17 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-04-24T15:59:50.17Z&interval=4000', # Season 17 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-05-10T15:59:50.17Z&interval=4000', # Season 18 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-05-10T15:59:50.17Z&interval=4000', # Season 18 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-05-11T20:59:50.17Z&interval=4000', # Season 18 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-05-13T19:59:50.17Z&interval=4000', # Season 18 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-05-15T15:59:50.17Z&interval=4000', # Season 18 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-05-17T15:59:50.17Z&interval=4000', # Season 19 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-05-17T15:59:50.17Z&interval=4000', # Season 19 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-05-18T19:59:50.17Z&interval=4000', # Season 19 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-05-20T15:59:50.17Z&interval=4000', # Season 19 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-05-22T15:59:50.17Z&interval=4000', # Season 19 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-06-14T15:59:50.17Z&interval=4000', # Season 20 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-14T15:59:50.17Z&interval=4000', # Season 20 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-15T19:59:50.17Z&interval=4000', # Season 20 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-17T18:59:50.17Z&interval=4000', # Season 20 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-06-19T15:59:50.17Z&interval=4000', # Season 20 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-06-21T15:59:50.17Z&interval=4000', # Season 21 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-21T15:59:50.17Z&interval=4000', # Season 21 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-22T19:59:50.17Z&interval=4000', # Season 21 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-24T18:59:50.17Z&interval=4000', # Season 21 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-06-26T15:59:50.17Z&interval=4000', # Season 21 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-06-28T15:59:50.17Z&interval=4000', # Season 22 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-28T15:59:50.17Z&interval=4000', # Season 22 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-06-29T19:59:50.17Z&interval=4000', # Season 22 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-07-01T19:59:50.17Z&interval=4000', # Season 22 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-07-03T15:59:50.17Z&interval=4000', # Season 22 semifinals
-    'https://api.sibr.dev/replay/v1/replay?from=2021-07-19T15:59:50.17Z&interval=4000', # Season 23 start
+    'https://api.sibr.dev/replay/v1/replay?from=2021-07-19T15:59:50.17Z&interval=4000', # Season 23 earlseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-07-20T19:59:50.17Z&interval=4000', # Season 23 midseason
+    'https://api.sibr.dev/replay/v1/replay?from=2021-07-22T18:59:50.17Z&interval=4000', # Season 23 lateseason
     'https://api.sibr.dev/replay/v1/replay?from=2021-07-24T15:59:50.17Z&interval=4000', # Season 23 semifinals
 ]
 
@@ -73,6 +96,8 @@ async def stream_events(url='https://www.blaseball.com/events/streamData', retry
     `retry_max` is the maximum time to delay if there's a connection error
     """
     retry_delay = retry_base
+    event_last = None
+    sim_last = None
     while True:
         try:
             async with sse_client.EventSource(url, read_bufsize=2 ** 18, timeout=-1) as src:
@@ -80,8 +105,21 @@ async def stream_events(url='https://www.blaseball.com/events/streamData', retry
                     retry_delay = retry_base  # reset backoff
                     if not event.data:
                         continue
-                    payload = ujson.loads(event.data)['value']
+                    try:
+                        payload = ujson.loads(event.data)['value']
+                        event_last = payload
+                        sim_tmp = payload.get('games',{}).get('sim',{})
+                        if sim_tmp:
+                            sim_last = sim_tmp
+                    except: # Debug, but it's been tested and everything should be fine.
+                        print("Something bad happened")
+                        print(event_last)
+                        print(sim_last)
+                        print(event.data)
+                    if payload.get('games',{}).get('sim',{}).get('phase',0) in [3,5,10,12,14]: # This timestamp expires at earlsiesta, latesiesta, end of early postseason, end of latepostseason, (and at semi-centennial)
+                        return
                     yield payload
+
         except (ConnectionError,
                 TimeoutError,
                 ClientPayloadError,
@@ -266,15 +304,15 @@ async def main():
 
     # Get data stream and process it constantly
     for timestamp in timestamps:
-        async for event in stream_events(url=timestamp):
+        print(timestamp)
+        event_stream = stream_events(url=timestamp)
+        async for event in event_stream:
         # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=1500'): # Faster
-        # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-03-01T15:59:50.17Z&interval=4000'): # Fast
-        # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-07-30T15:59:50.17Z&interval=4000'): # Fast
+        # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-03-01T15:59:50.17Z&interval=4000'):
+        # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-07-30T15:59:50.17Z&interval=4000'):
         # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-06-16T00:59:50.17Z&interval=4000'): # Normal?
         # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2020-10-05T16:31:50.17Z&interval=1500'): # Crowvertime
         # async for event in stream_events(url='https://api.sibr.dev/replay/v1/replay?from=2021-05-20T11:44:50.17Z&interval=1500'): # Drumsolo
-            if event.get('games',{}).get('sim',{}).get('phase',0) in [10,12]:
-                break
             if event.get('games',{}).get('schedule'):
                 # Get team lineups
                 if event.get('leagues'):
